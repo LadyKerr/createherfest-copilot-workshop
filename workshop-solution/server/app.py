@@ -96,8 +96,24 @@ def get_airports() -> List[Dict]:
     """
     try:
         # Read airports CSV file
-        airports_df = pd.read_csv('origin_airport.csv')
-        airports = airports_df.to_dict('records')
+        try:
+            airports_df = pd.read_csv('origin_airport.csv')
+            airports = airports_df.to_dict('records')
+        except FileNotFoundError:
+            logger.error("CSV file not found")
+            return jsonify({
+                'error': 'CSV file not found'
+            }), HTTPStatus.INTERNAL_SERVER_ERROR
+        except pd.errors.EmptyDataError:
+            logger.error("CSV file is empty")
+            return jsonify({
+                'error': 'CSV file is empty'
+            }), HTTPStatus.INTERNAL_SERVER_ERROR
+        except pd.errors.ParserError:
+            logger.error("CSV file is corrupted")
+            return jsonify({
+                'error': 'CSV file is corrupted'
+            }), HTTPStatus.INTERNAL_SERVER_ERROR
         
         return jsonify({
             'airports': airports,
